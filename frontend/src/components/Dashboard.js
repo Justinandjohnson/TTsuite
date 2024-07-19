@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { Grid, Heading, Container, Box, Text, VStack, HStack, Badge, Button, Input, useToast, Stat, StatLabel, StatNumber, StatHelpText } from '@chakra-ui/react';
+import { Grid, Heading, Container, Box, Text, VStack, HStack, Badge, Button, Input, useToast, Stat, StatLabel, StatNumber, Table, Thead, Tbody, Tr, Th, Td } from '@chakra-ui/react';
 
 function Dashboard() {
   const [tables, setTables] = useState([]);
@@ -85,34 +85,95 @@ function Dashboard() {
     }
   };
 
+  const assignPlayerToTable = async (tableId) => {
+    if (queue.length === 0) {
+      toast({
+        title: "Error",
+        description: "No players in the queue",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+    try {
+      const player = queue[0];
+      await axios.put(`http://localhost:5000/api/tables/${tableId}`, { 
+        status: 'occupied', 
+        players: [player.name]
+      });
+      await axios.delete(`http://localhost:5000/api/queue/${player._id}`);
+      
+      // Fetch updated tables and queue
+      const [tablesRes, queueRes] = await Promise.all([
+        axios.get('http://localhost:5000/api/tables'),
+        axios.get('http://localhost:5000/api/queue')
+      ]);
+      setTables(tablesRes.data);
+      setQueue(queueRes.data);
+      
+      toast({
+        title: "Success",
+        description: `Assigned ${player.name} to Table ${tableId}`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Error assigning player to table:', error);
+      toast({
+        title: "Error",
+        description: "Failed to assign player to table",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <Container maxW="container.xl" py={8}>
       <Box bg="rgba(0,0,0,0.8)" p={6} borderRadius="md" boxShadow="xl">
         <Heading as="h1" size="2xl" textAlign="center" mb={8} color="teal.300">
           Table Tennis Dashboard
         </Heading>
-        <Grid templateColumns={["repeat(1, 1fr)", "repeat(2, 1fr)", "repeat(3, 1fr)"]} gap={8} mb={8}>
-          {tables.map((table) => (
-            <Box key={table.id} bg="gray.800" p={4} borderRadius="md" boxShadow="lg" border="1px" borderColor="gray.700">
-              <Heading as="h3" size="lg" mb={2} color="white">
-                Table {table.id}
-              </Heading>
-              <Badge colorScheme={getStatusColor(table.status)} mb={2} fontSize="md">
-                {table.status}
-              </Badge>
-              {table.players.length > 0 ? (
-                <VStack align="start" mt={2}>
-                  <Text fontWeight="bold" color="white">Players:</Text>
-                  {table.players.map((player, index) => (
-                    <Text key={index} color="gray.300">{player}</Text>
-                  ))}
-                </VStack>
-              ) : (
-                <Text color="gray.400" mt={2}>No players currently</Text>
-              )}
-            </Box>
-          ))}
-        </Grid>
+        <Box overflowX="auto">
+          <Table variant="simple" colorScheme="teal" mb={8}>
+            <Thead>
+              <Tr>
+                <Th color="teal.300">Table</Th>
+                <Th color="teal.300">Status</Th>
+                <Th color="teal.300">Players</Th>
+                <Th color="teal.300">Action</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {tables.map((table) => (
+                <Tr key={table.id}>
+                  <Td color="white">Table {table.id}</Td>
+                  <Td>
+                    <Badge colorScheme={getStatusColor(table.status)}>
+                      {table.status}
+                    </Badge>
+                  </Td>
+                  <Td color="white">
+                    {table.players.length > 0 ? table.players.join(', ') : 'Free'}
+                  </Td>
+                  <Td>
+                    <Button 
+                      colorScheme="teal" 
+                      size="sm"
+                      onClick={() => assignPlayerToTable(table.id)}
+                      isDisabled={table.status === 'occupied' || queue.length === 0}
+                    >
+                      Assign Player
+                    </Button>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </Box>
         <Box bg="gray.800" p={6} borderRadius="md" boxShadow="lg" mb={8}>
           <Heading as="h3" size="lg" mb={4} color="teal.300">Queue Statistics</Heading>
           <HStack spacing={8} justify="center">

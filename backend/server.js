@@ -93,6 +93,25 @@ app.delete('/api/queue/:id', async (req, res) => {
   }
 });
 
+app.put('/api/tables/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, players } = req.body;
+    const database = db;
+    const tables = database.collection("tables");
+    const result = await tables.updateOne(
+      { id: parseInt(id) },
+      { $set: { status, players } }
+    );
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: 'Table not found' });
+    }
+    res.json({ message: 'Table updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
