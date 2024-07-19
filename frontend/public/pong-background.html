@@ -34,12 +34,8 @@
         const ballSize = 10;
         let ballX = canvas.width / 2;
         let ballY = canvas.height / 2;
-        let ballSpeedX = 3;
-        let ballSpeedY = 3;
-
-        function getRandomSpeed(min, max) {
-            return Math.random() * (max - min) + min;
-        }
+        let ballSpeedX = 5;
+        let ballSpeedY = 5;
 
         function drawRect(x, y, width, height, color) {
             ctx.fillStyle = color;
@@ -53,29 +49,27 @@
             ctx.fill();
         }
 
-        function movePaddles() {
-            const paddleSpeed = 3;
-            
-            // Left paddle
-            const leftTargetY = ballY - paddleHeight / 2;
-            if (Math.abs(leftTargetY - leftPaddleY) > paddleSpeed) {
-                leftPaddleY += (leftTargetY > leftPaddleY) ? paddleSpeed : -paddleSpeed;
+            // Move paddles to always hit the ball
+            const paddleSpeed = Math.abs(ballSpeedY) * 0.95; // Slightly slower than the ball
+            if (ballX < canvas.width / 2) {
+                // Left paddle
+                if (ballY < leftPaddleY + paddleHeight / 2) {
+                    leftPaddleY -= paddleSpeed;
+                } else {
+                    leftPaddleY += paddleSpeed;
+                }
             } else {
-                leftPaddleY = leftTargetY;
+                // Right paddle
+                if (ballY < rightPaddleY + paddleHeight / 2) {
+                    rightPaddleY -= paddleSpeed;
+                } else {
+                    rightPaddleY += paddleSpeed;
+                }
             }
 
-            // Right paddle
-            const rightTargetY = ballY - paddleHeight / 2;
-            if (Math.abs(rightTargetY - rightPaddleY) > paddleSpeed) {
-                rightPaddleY += (rightTargetY > rightPaddleY) ? paddleSpeed : -paddleSpeed;
-            } else {
-                rightPaddleY = rightTargetY;
-            }
-
-            // Keep paddles within canvas bounds
+            // Keep paddles on screen
             leftPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, leftPaddleY));
             rightPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, rightPaddleY));
-        }
 
         function updateBall() {
             ballX += ballSpeedX;
@@ -87,23 +81,23 @@
                 ballSpeedY = getRandomSpeed(2, 4) * Math.sign(ballSpeedY);
             }
 
-            // Bounce off paddles
+            // Ball collision with paddles
             if (
                 (ballX - ballSize < paddleWidth && ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) ||
                 (ballX + ballSize > canvas.width - paddleWidth && ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight)
             ) {
                 ballSpeedX = -ballSpeedX;
-                ballSpeedX = getRandomSpeed(2, 4) * Math.sign(ballSpeedX);
-                ballSpeedY = getRandomSpeed(-4, 4);
+                // Randomize ball speed slightly
+                ballSpeedX *= 0.9 + Math.random() * 0.2;
+                ballSpeedY *= 0.9 + Math.random() * 0.2;
             }
 
-            // Keep ball within horizontal bounds
-            if (ballX < ballSize) {
-                ballX = ballSize;
-                ballSpeedX = Math.abs(ballSpeedX);
-            } else if (ballX > canvas.width - ballSize) {
-                ballX = canvas.width - ballSize;
-                ballSpeedX = -Math.abs(ballSpeedX);
+            // Reset ball if it goes past paddles
+            if (ballX < 0 || ballX > canvas.width) {
+                ballX = canvas.width / 2;
+                ballY = canvas.height / 2;
+                ballSpeedX = 5 * (Math.random() > 0.5 ? 1 : -1);
+                ballSpeedY = 5 * (Math.random() > 0.5 ? 1 : -1);
             }
         }
 
