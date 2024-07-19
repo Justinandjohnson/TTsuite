@@ -116,7 +116,8 @@ app.post('/api/queue', async (req, res) => {
     res.status(201).json({ message: 'Player added to queue', position: position });
   } catch (error) {
     console.error('Error adding player to queue:', error);
-    res.status(400).json({ message: error.message });
+    console.error('Error stack:', error.stack);
+    res.status(400).json({ message: error.message, stack: error.stack });
   }
 });
 

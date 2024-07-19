@@ -74,9 +74,10 @@ function Dashboard() {
       setQueue(updatedQueueRes.data);
     } catch (error) {
       console.error('Error adding player to queue:', error);
+      console.error('Error response:', error.response);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to add player to the queue.",
+        description: error.response?.data?.message || error.message || "Failed to add player to the queue.",
         status: "error",
         duration: 3000,
         isClosable: true,
