@@ -77,6 +77,27 @@ app.delete('/api/queue/:id', async (req, res) => {
   }
 });
 
+app.put('/api/tables/:id', async (req, res) => {
+  const { id } = req.params;
+  const { status, players } = req.body;
+  try {
+    const updatedTable = await Table.findOneAndUpdate(
+      { id: parseInt(id) },
+      { status, players },
+      { new: true }
+    );
+    if (updatedTable) {
+      const allTables = await Table.find();
+      io.emit('tableUpdate', allTables);
+      res.json(updatedTable);
+    } else {
+      res.status(404).json({ message: 'Table not found' });
+    }
+  } catch (error) {
+    res.status(400).json({ message: 'Error updating table', error: error.message });
+  }
+});
+
 // Initialize tables if they don't exist
 async function initializeTables() {
   const count = await Table.countDocuments();

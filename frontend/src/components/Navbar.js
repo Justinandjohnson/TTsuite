@@ -13,8 +13,11 @@ function Navbar() {
         <Link as={RouterLink} to="/queue" color="white" mr={4}>
           Queue
         </Link>
-        <Link as={RouterLink} to="/scan" color="white">
+        <Link as={RouterLink} to="/scan" color="white" mr={4}>
           Scan QR
+        </Link>
+        <Link as={RouterLink} to="/manage" color="white">
+          Manage Tables
         </Link>
       </Flex>
     </Box>
