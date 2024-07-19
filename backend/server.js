@@ -113,8 +113,9 @@ app.post('/api/queue', async (req, res) => {
     await newQueueItem.save();
     const updatedQueue = await Queue.find().sort('position');
     io.emit('queueUpdate', updatedQueue);
-    res.status(201).json(newQueueItem);
+    res.status(201).json({ message: 'Player added to queue', position: position });
   } catch (error) {
+    console.error('Error adding player to queue:', error);
     res.status(400).json({ message: error.message });
   }
 });

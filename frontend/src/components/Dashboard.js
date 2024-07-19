@@ -59,21 +59,24 @@ function Dashboard() {
       return;
     }
     try {
-      await axios.post('http://localhost:5000/api/queue', { name: newPlayerName, phone: newPlayerPhone });
+      const response = await axios.post('http://localhost:5000/api/queue', { name: newPlayerName, phone: newPlayerPhone });
       setNewPlayerName('');
       setNewPlayerPhone('');
       toast({
         title: "Success",
-        description: "Player added to the queue.",
+        description: `Player added to the queue. Position: ${response.data.position}`,
         status: "success",
         duration: 3000,
         isClosable: true,
       });
+      // Fetch updated queue
+      const updatedQueueRes = await axios.get('http://localhost:5000/api/queue');
+      setQueue(updatedQueueRes.data);
     } catch (error) {
       console.error('Error adding player to queue:', error);
       toast({
         title: "Error",
-        description: "Failed to add player to the queue.",
+        description: error.response?.data?.message || "Failed to add player to the queue.",
         status: "error",
         duration: 3000,
         isClosable: true,
