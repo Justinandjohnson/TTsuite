@@ -9,23 +9,17 @@ This is a full-stack React application for managing table tennis queues.
 
 2. Install dependencies:
    ```
-   cd backend && npm install
-   cd ../frontend && npm install
+   npm install
    ```
 
-3. Start the backend server:
+3. Start the application (both backend and frontend):
    ```
-   cd backend && node server.js
-   ```
-
-4. Start the frontend development server:
-   ```
-   cd frontend && npm start
+   npm start
    ```
 
-5. Run tests:
+4. Run tests:
    ```
-   cd backend && node test.js
+   npm test
    ```
 
 ## Usage
@@ -39,3 +33,8 @@ This is a full-stack React application for managing table tennis queues.
 - Queue management
 - QR code scanning for joining the queue
 - Table management for staff
+- Hot reloading for both frontend and backend
+
+## Development
+
+The application uses `nodemon` for the backend and Create React App's built-in hot reloading for the frontend. Any changes you make to the code will automatically trigger a reload of the affected parts of the application.

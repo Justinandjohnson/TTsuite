@@ -1,0 +1,16 @@
+{
+  "name": "table-tennis-queue-management",
+  "version": "1.0.0",
+  "description": "Full-stack React application for managing table tennis queues",
+  "scripts": {
+    "install": "cd backend && npm install && cd ../frontend && npm install",
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && nodemon server.js",
+    "client": "cd frontend && npm start",
+    "test": "cd backend && node test.js"
+  },
+  "devDependencies": {
+    "concurrently": "^6.2.0",
+    "nodemon": "^2.0.7"
+  }
+}
