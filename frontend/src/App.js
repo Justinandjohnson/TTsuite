@@ -32,24 +32,17 @@ function App() {
           position="relative"
           overflow="hidden"
         >
-          <video
-            autoPlay
-            loop
-            muted
+          <iframe
+            src="/pong-background.html"
             style={{
               position: 'absolute',
               width: '100%',
-              left: '50%',
-              top: '50%',
               height: '100%',
-              objectFit: 'cover',
-              transform: 'translate(-50%, -50%)',
+              border: 'none',
               zIndex: '-1'
             }}
-          >
-            <source src="/pong-background.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+            title="Pong Background"
+          ></iframe>
           <Navbar />
           <Routes>
             <Route path="/" element={<Dashboard />} />
