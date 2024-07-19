@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { Grid, Heading, Container, Box, Text, VStack } from '@chakra-ui/react';
+import { Grid, Heading, Container, Box, Text, VStack, HStack, Badge, Stat, StatLabel, StatNumber, StatHelpText } from '@chakra-ui/react';
 
 function Dashboard() {
   const [tables, setTables] = useState([]);
@@ -33,19 +33,37 @@ function Dashboard() {
     return () => socket.disconnect();
   }, []);
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'available':
+        return 'green';
+      case 'occupied':
+        return 'red';
+      default:
+        return 'gray';
+    }
+  };
+
+  const calculateWaitTime = (position) => {
+    const averageGameTime = 15; // minutes
+    return position * averageGameTime;
+  };
+
   return (
     <Container maxW="container.xl" py={8}>
       <Box bg="rgba(0,0,0,0.7)" p={6} borderRadius="md">
         <Heading as="h1" size="2xl" textAlign="center" mb={8} color="teal.300">
-          Table Dashboard
+          Table Tennis Dashboard
         </Heading>
-        <Grid templateColumns={["repeat(1, 1fr)", "repeat(2, 1fr)", "repeat(3, 1fr)"]} gap={8}>
+        <Grid templateColumns={["repeat(1, 1fr)", "repeat(2, 1fr)", "repeat(3, 1fr)"]} gap={8} mb={8}>
           {tables.map((table) => (
-            <Box key={table.id} bg="gray.700" p={4} borderRadius="md">
+            <Box key={table.id} bg="gray.700" p={4} borderRadius="md" boxShadow="md">
               <Heading as="h3" size="lg" mb={2}>
                 Table {table.id}
               </Heading>
-              <Text>Status: {table.status}</Text>
+              <Badge colorScheme={getStatusColor(table.status)} mb={2}>
+                {table.status}
+              </Badge>
               {table.players.length > 0 && (
                 <VStack align="start" mt={2}>
                   <Text fontWeight="bold">Players:</Text>
@@ -62,11 +80,20 @@ function Dashboard() {
         </Heading>
         <VStack spacing={4} align="stretch">
           {queue.map((player, index) => (
-            <Box key={player._id} bg="gray.700" p={4} borderRadius="md">
-              <Text fontWeight="bold">
-                {index + 1}. {player.name}
-              </Text>
-              <Text>Phone: {player.phone}</Text>
+            <Box key={player._id} bg="gray.700" p={4} borderRadius="md" boxShadow="md">
+              <HStack justifyContent="space-between">
+                <VStack align="start" spacing={1}>
+                  <Text fontWeight="bold" fontSize="lg">
+                    {index + 1}. {player.name}
+                  </Text>
+                  <Text fontSize="sm" color="gray.400">{player.phone}</Text>
+                </VStack>
+                <Stat>
+                  <StatLabel>Estimated Wait</StatLabel>
+                  <StatNumber>{calculateWaitTime(index + 1)} min</StatNumber>
+                  <StatHelpText>Position: {index + 1}</StatHelpText>
+                </Stat>
+              </HStack>
             </Box>
           ))}
         </VStack>
