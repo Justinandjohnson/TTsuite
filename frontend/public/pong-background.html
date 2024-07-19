@@ -34,13 +34,13 @@
         const ballSize = 10;
         let ballX = canvas.width / 2;
         let ballY = canvas.height / 2;
-        let ballSpeedX = 5;
-        let ballSpeedY = 5;
-        const baseSpeed = 5;
-        const maxSpeed = 15;
-        const accelerationRate = 0.1;
+        let ballSpeedX = 3;
+        let ballSpeedY = 3;
+        const baseSpeed = 3;
+        const maxSpeed = 10;
+        const accelerationRate = 0.05;
         let speedResetCounter = 0;
-        const speedResetThreshold = 100; // Reset speed after this many frames
+        const speedResetThreshold = 150; // Reset speed after this many frames
 
         function drawRect(x, y, width, height, color) {
             ctx.fillStyle = color;
