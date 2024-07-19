@@ -7,9 +7,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({
-  origin: 'http://localhost:3000'
-}));
+app.use(cors());
 app.use(express.json());
 
 // Import Table model
@@ -23,7 +21,10 @@ mongoose.connect(MONGODB_URI, {
   useUnifiedTopology: true,
 })
 .then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1);  // Exit the process if unable to connect to MongoDB
+});
 
 // Initialize tables if they don't exist
 async function initializeTables() {
@@ -39,49 +40,14 @@ async function initializeTables() {
   }
 }
 
-initializeTables();
+// Only initialize tables after successful connection
+mongoose.connection.once('open', () => {
+  initializeTables();
+});
 
 // Add your routes here
 // app.use('/api/tables', tableRoutes);
-// app.use('/api/queue', queueRoutes);
 
-let server;
-
-function startServer() {
-  server = app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  }).on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.error(`Port ${PORT} is already in use. Please use a different port.`);
-      process.exit(1);
-    } else {
-      console.error('Error starting server:', err);
-    }
-  });
-}
-
-startServer();
-
-// Graceful shutdown
-function gracefulShutdown() {
-  console.log('Shutting down gracefully...');
-  if (server) {
-    server.close(() => {
-      console.log('Closed out remaining connections.');
-      mongoose.connection.close(false, () => {
-        console.log('MongoDB connection closed.');
-        process.exit(0);
-      });
-    });
-
-    setTimeout(() => {
-      console.error('Could not close connections in time, forcefully shutting down');
-      process.exit(1);
-    }, 10000);
-  } else {
-    process.exit(0);
-  }
-}
-
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
