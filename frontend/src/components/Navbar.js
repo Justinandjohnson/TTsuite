@@ -1,27 +1,56 @@
 import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import { Box, Flex, Link, Spacer } from '@chakra-ui/react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Dashboard from './components/Dashboard';
+import Queue from './components/Queue';
+import TableManagement from './components/TableManagement';
+import QRCodeScanner from './components/QRCodeScanner';
 
-function Navbar() {
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: (
+      <>
+        <Navbar />
+        <Dashboard />
+      </>
+    ),
+  },
+  {
+    path: "/queue",
+    element: (
+      <>
+        <Navbar />
+        <Queue />
+      </>
+    ),
+  },
+  {
+    path: "/tables",
+    element: (
+      <>
+        <Navbar />
+        <TableManagement />
+      </>
+    ),
+  },
+  {
+    path: "/scan",
+    element: (
+      <>
+        <Navbar />
+        <QRCodeScanner />
+      </>
+    ),
+  },
+]);
+
+function App() {
   return (
-    <Box bg="blue.500" px={4} py={3}>
-      <Flex alignItems="center">
-        <Link as={RouterLink} to="/" color="white" fontWeight="bold" fontSize="lg">
-          Home
-        </Link>
-        <Spacer />
-        <Link as={RouterLink} to="/queue" color="white" mr={4}>
-          Queue
-        </Link>
-        <Link as={RouterLink} to="/scan" color="white" mr={4}>
-          Scan QR
-        </Link>
-        <Link as={RouterLink} to="/manage" color="white">
-          Manage Tables
-        </Link>
-      </Flex>
-    </Box>
+    <React.StrictMode>
+      <RouterProvider router={router} />
+    </React.StrictMode>
   );
 }
 
-export default Navbar;
+export default App;

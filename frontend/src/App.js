@@ -1,30 +1,55 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import { ChakraProvider, Box, VStack, Heading } from '@chakra-ui/react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import Queue from './components/Queue';
-import QRCodeScanner from './components/QRCodeScanner';
 import TableManagement from './components/TableManagement';
+import QRCodeScanner from './components/QRCodeScanner';
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: (
+      <>
+        <Navbar />
+        <Dashboard />
+      </>
+    ),
+  },
+  {
+    path: "/queue",
+    element: (
+      <>
+        <Navbar />
+        <Queue />
+      </>
+    ),
+  },
+  {
+    path: "/tables",
+    element: (
+      <>
+        <Navbar />
+        <TableManagement />
+      </>
+    ),
+  },
+  {
+    path: "/scan",
+    element: (
+      <>
+        <Navbar />
+        <QRCodeScanner />
+      </>
+    ),
+  },
+]);
 
 function App() {
   return (
-    <ChakraProvider>
-      <Router>
-        <Box minH="100vh" bg="gray.100">
-          <Navbar />
-          <VStack spacing={8} p={8}>
-            <Heading as="h1" size="2xl">Table Tennis Queue Management</Heading>
-            <Switch>
-              <Route exact path="/" component={Dashboard} />
-              <Route path="/queue" component={Queue} />
-              <Route path="/scan" component={QRCodeScanner} />
-              <Route path="/manage" component={TableManagement} />
-            </Switch>
-          </VStack>
-        </Box>
-      </Router>
-    </ChakraProvider>
+    <React.StrictMode>
+      <RouterProvider router={router} />
+    </React.StrictMode>
   );
 }
 
