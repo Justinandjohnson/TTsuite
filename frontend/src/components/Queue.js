@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { Box, Heading, VStack, HStack, Text, Button, useToast } from '@chakra-ui/react';
+import { Box, Heading, VStack, HStack, Text, Button, useToast, Container } from '@chakra-ui/react';
 
 const socket = io('http://localhost:5000');
 
@@ -48,28 +48,30 @@ function Queue() {
   };
 
   return (
-    <Box w="100%">
-      <Heading as="h2" size="xl" mb={6}>Queue</Heading>
+    <Container maxW="container.xl" py={8}>
+      <Heading as="h2" size="2xl" mb={8} color="teal.300">Queue</Heading>
       <VStack spacing={4} align="stretch">
         {queue.map((player, index) => (
-          <HStack key={player._id} bg="white" p={4} borderRadius="md" boxShadow="md" justifyContent="space-between">
-            <VStack align="start" spacing={1}>
-              <Text fontWeight="bold">{player.name}</Text>
-              <Text fontSize="sm" color="gray.600">{player.phone}</Text>
-              <Text fontSize="sm" color="blue.600">
-                Estimated wait: {player.estimatedWaitTime} minutes
-              </Text>
-            </VStack>
-            <VStack align="end" spacing={1}>
-              <Text fontSize="sm" fontWeight="bold">Position: {index + 1}</Text>
-              <Button colorScheme="red" size="sm" onClick={() => removeFromQueue(player._id)}>
-                Remove
-              </Button>
-            </VStack>
-          </HStack>
+          <Box key={player._id} bg="gray.700" p={6} borderRadius="lg" boxShadow="lg">
+            <HStack justifyContent="space-between">
+              <VStack align="start" spacing={2}>
+                <Text fontWeight="bold" fontSize="xl">{player.name}</Text>
+                <Text fontSize="md" color="gray.400">{player.phone}</Text>
+                <Text fontSize="md" color="teal.300">
+                  Estimated wait: {player.estimatedWaitTime} minutes
+                </Text>
+              </VStack>
+              <VStack align="end" spacing={2}>
+                <Text fontSize="lg" fontWeight="bold" color="teal.300">Position: {index + 1}</Text>
+                <Button colorScheme="red" size="md" onClick={() => removeFromQueue(player._id)}>
+                  Remove
+                </Button>
+              </VStack>
+            </HStack>
+          </Box>
         ))}
       </VStack>
-    </Box>
+    </Container>
   );
 }
 

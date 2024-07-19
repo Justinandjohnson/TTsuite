@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { Box, Grid, Heading } from '@chakra-ui/react';
+import { Box, Grid, Heading, Container } from '@chakra-ui/react';
 import TableStatus from './TableStatus';
 
 function Dashboard() {
@@ -27,16 +27,16 @@ function Dashboard() {
   }, []);
 
   return (
-    <Box>
-      <Heading as="h1" size="xl" textAlign="center" my={4}>
+    <Container maxW="container.xl" py={8}>
+      <Heading as="h1" size="2xl" textAlign="center" mb={8} color="teal.300">
         Table Dashboard
       </Heading>
-      <Grid templateColumns="repeat(3, 1fr)" gap={6}>
+      <Grid templateColumns={["repeat(1, 1fr)", "repeat(2, 1fr)", "repeat(3, 1fr)"]} gap={8}>
         {tables.map((table) => (
           <TableStatus key={table.id} table={table} />
         ))}
       </Grid>
-    </Box>
+    </Container>
   );
 }
 
