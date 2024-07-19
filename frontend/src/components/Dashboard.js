@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { Grid, Heading, Container, Box, Text, VStack, HStack, Badge, Stat, StatLabel, StatNumber, StatHelpText } from '@chakra-ui/react';
+import { Grid, Heading, Container, Box, Text, VStack, HStack, Badge, Button, Input, useToast } from '@chakra-ui/react';
 
 function Dashboard() {
   const [tables, setTables] = useState([]);
   const [queue, setQueue] = useState([]);
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [newPlayerPhone, setNewPlayerPhone] = useState('');
+  const toast = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,9 +47,38 @@ function Dashboard() {
     }
   };
 
-  const calculateWaitTime = (position) => {
-    const averageGameTime = 15; // minutes
-    return position * averageGameTime;
+  const addPlayerToQueue = async () => {
+    if (!newPlayerName || !newPlayerPhone) {
+      toast({
+        title: "Error",
+        description: "Please enter both name and phone number.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+    try {
+      await axios.post('http://localhost:5000/api/queue', { name: newPlayerName, phone: newPlayerPhone });
+      setNewPlayerName('');
+      setNewPlayerPhone('');
+      toast({
+        title: "Success",
+        description: "Player added to the queue.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Error adding player to queue:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add player to the queue.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
@@ -78,7 +110,7 @@ function Dashboard() {
         <Heading as="h2" size="xl" textAlign="center" mt={8} mb={4} color="teal.300">
           Queue
         </Heading>
-        <VStack spacing={4} align="stretch">
+        <VStack spacing={4} align="stretch" mb={8}>
           {queue.map((player, index) => (
             <Box key={player._id} bg="gray.800" p={4} borderRadius="md" boxShadow="lg" border="1px" borderColor="gray.700">
               <HStack justifyContent="space-between">
@@ -88,15 +120,34 @@ function Dashboard() {
                   </Text>
                   <Text fontSize="sm" color="gray.400">{player.phone}</Text>
                 </VStack>
-                <Stat>
-                  <StatLabel color="gray.400">Estimated Wait</StatLabel>
-                  <StatNumber color="teal.300">{calculateWaitTime(index + 1)} min</StatNumber>
-                  <StatHelpText color="gray.400">Position: {index + 1}</StatHelpText>
-                </Stat>
               </HStack>
             </Box>
           ))}
         </VStack>
+        <Box bg="gray.800" p={4} borderRadius="md" boxShadow="lg" border="1px" borderColor="gray.700">
+          <Heading as="h3" size="md" mb={4} color="teal.300">
+            Add Player to Queue
+          </Heading>
+          <VStack spacing={4}>
+            <Input
+              placeholder="Player Name"
+              value={newPlayerName}
+              onChange={(e) => setNewPlayerName(e.target.value)}
+              bg="gray.700"
+              color="white"
+            />
+            <Input
+              placeholder="Phone Number"
+              value={newPlayerPhone}
+              onChange={(e) => setNewPlayerPhone(e.target.value)}
+              bg="gray.700"
+              color="white"
+            />
+            <Button colorScheme="teal" onClick={addPlayerToQueue}>
+              Add to Queue
+            </Button>
+          </VStack>
+        </Box>
       </Box>
     </Container>
   );
