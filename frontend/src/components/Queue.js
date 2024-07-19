@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:5000');
 
 function Queue() {
   const [queue, setQueue] = useState([]);
@@ -10,13 +13,19 @@ function Queue() {
       setQueue(res.data);
     };
     fetchQueue();
-    // Set up real-time updates here
+
+    socket.on('queueUpdate', (updatedQueue) => {
+      setQueue(updatedQueue);
+    });
+
+    return () => {
+      socket.off('queueUpdate');
+    };
   }, []);
 
   const removeFromQueue = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/queue/${id}`);
-      setQueue(queue.filter(player => player._id !== id));
     } catch (error) {
       console.error('Error removing player from queue:', error);
     }

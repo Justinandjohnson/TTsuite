@@ -2,15 +2,32 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const connectDB = require('./db');
+const http = require('http');
+const socketIo = require('socket.io');
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
+});
+
 const port = process.env.PORT || 5000;
 
 connectDB();
 
 app.use(cors());
 app.use(express.json());
+
+io.on('connection', (socket) => {
+  console.log('New client connected');
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
 
 // MongoDB models
 const Table = mongoose.model('Table', new mongoose.Schema({
@@ -39,6 +56,8 @@ app.post('/api/queue', async (req, res) => {
   const { name, phone } = req.body;
   const newQueueItem = new QueueItem({ name, phone });
   await newQueueItem.save();
+  const updatedQueue = await QueueItem.find();
+  io.emit('queueUpdate', updatedQueue);
   res.status(201).json({ message: 'Added to queue' });
 });
 
@@ -47,6 +66,8 @@ app.delete('/api/queue/:id', async (req, res) => {
   try {
     const removedPlayer = await QueueItem.findByIdAndDelete(id);
     if (removedPlayer) {
+      const updatedQueue = await QueueItem.find();
+      io.emit('queueUpdate', updatedQueue);
       res.json({ message: 'Removed from queue', removedPlayer });
     } else {
       res.status(404).json({ message: 'Player not found in queue' });
@@ -67,6 +88,6 @@ async function initializeTables() {
 
 initializeTables();
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

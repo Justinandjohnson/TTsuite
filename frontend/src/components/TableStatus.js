@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:5000');
 
 function TableStatus() {
   const [tables, setTables] = useState([]);
@@ -10,7 +13,14 @@ function TableStatus() {
       setTables(res.data);
     };
     fetchTables();
-    // Set up real-time updates here (e.g., using WebSockets)
+
+    socket.on('tableUpdate', (updatedTables) => {
+      setTables(updatedTables);
+    });
+
+    return () => {
+      socket.off('tableUpdate');
+    };
   }, []);
 
   return (
