@@ -5,19 +5,10 @@ import { Grid, Box, Heading, Text, Badge } from '@chakra-ui/react';
 
 const socket = io('http://localhost:5000');
 
-function Dashboard() {
-  const [tables, setTables] = useState([]);
+import React from 'react';
+import { Box, Text, Badge } from '@chakra-ui/react';
 
-  useEffect(() => {
-    const fetchTables = async () => {
-      const res = await axios.get('http://localhost:5000/api/tables');
-      setTables(res.data);
-    };
-    fetchTables();
-
-    socket.on('tableUpdate', (updatedTables) => {
-      setTables(updatedTables);
-    });
+function TableStatus({ table }) {
 
     return () => {
       socket.off('tableUpdate');
@@ -43,3 +34,21 @@ function Dashboard() {
 }
 
 export default Dashboard;
+  return (
+    <Box borderWidth="1px" borderRadius="lg" p={4}>
+      <Text fontSize="xl" fontWeight="bold">
+        Table {table.id}
+      </Text>
+      <Badge colorScheme={table.status === 'available' ? 'green' : 'red'}>
+        {table.status}
+      </Badge>
+      {table.players.length > 0 && (
+        <Text mt={2}>
+          Players: {table.players.join(', ')}
+        </Text>
+      )}
+    </Box>
+  );
+}
+
+export default TableStatus;
