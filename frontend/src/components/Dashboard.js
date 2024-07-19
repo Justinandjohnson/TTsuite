@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { Grid, Heading, Container, Box, Text, VStack, HStack, Badge, Button, Input, useToast, Stat, StatLabel, StatNumber, Table, Thead, Tbody, Tr, Th, Td } from '@chakra-ui/react';
+import { Grid, Heading, Container, Box, Text, VStack, HStack, Badge, Button, Input, useToast, Stat, StatLabel, StatNumber, Table, Thead, Tbody, Tr, Th, Td, Select, Switch, FormControl, FormLabel } from '@chakra-ui/react';
 
 function Dashboard() {
   const [tables, setTables] = useState([]);
   const [queue, setQueue] = useState([]);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerPhone, setNewPlayerPhone] = useState('');
+  const [selectedPlayer, setSelectedPlayer] = useState('');
+  const [selectedTable, setSelectedTable] = useState('');
+  const [isAutoMode, setIsAutoMode] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -35,6 +38,13 @@ function Dashboard() {
 
     return () => socket.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (isAutoMode) {
+      const interval = setInterval(autoAssignPlayers, 5000); // Check every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [isAutoMode, tables, queue]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -85,11 +95,11 @@ function Dashboard() {
     }
   };
 
-  const assignPlayerToTable = async (tableId) => {
-    if (queue.length === 0) {
+  const assignPlayerToTable = async (tableId, playerId) => {
+    if (!playerId) {
       toast({
         title: "Error",
-        description: "No players in the queue",
+        description: "No player selected",
         status: "warning",
         duration: 3000,
         isClosable: true,
@@ -97,7 +107,7 @@ function Dashboard() {
       return;
     }
     try {
-      const player = queue[0];
+      const player = queue.find(p => p._id === playerId);
       await axios.put(`http://localhost:5000/api/tables/${tableId}`, { 
         status: 'occupied', 
         players: [player.name]
@@ -131,12 +141,78 @@ function Dashboard() {
     }
   };
 
+  const addTable = async () => {
+    try {
+      const response = await axios.post('http://localhost:5000/api/tables', { status: 'available' });
+      setTables([...tables, response.data]);
+      toast({
+        title: "Success",
+        description: `Added new table: Table ${response.data.id}`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Error adding table:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add new table",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const removeTable = async (tableId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/tables/${tableId}`);
+      setTables(tables.filter(table => table.id !== tableId));
+      toast({
+        title: "Success",
+        description: `Removed Table ${tableId}`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Error removing table:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove table",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const autoAssignPlayers = async () => {
+    const availableTables = tables.filter(table => table.status === 'available');
+    const playersToAssign = queue.slice(0, availableTables.length);
+
+    for (let i = 0; i < playersToAssign.length; i++) {
+      const player = playersToAssign[i];
+      const table = availableTables[i];
+
+      if (window.confirm(`Assign ${player.name} to Table ${table.id}?`)) {
+        await assignPlayerToTable(table.id, player._id);
+      }
+    }
+  };
+
   return (
     <Container maxW="container.xl" py={8}>
       <Box bg="rgba(0,0,0,0.8)" p={6} borderRadius="md" boxShadow="xl">
         <Heading as="h1" size="2xl" textAlign="center" mb={8} color="teal.300">
           Table Tennis Dashboard
         </Heading>
+        <FormControl display="flex" alignItems="center" mb={4}>
+          <FormLabel htmlFor="auto-mode" mb="0" color="white">
+            Auto Mode
+          </FormLabel>
+          <Switch id="auto-mode" onChange={(e) => setIsAutoMode(e.target.checked)} />
+        </FormControl>
         <Box overflowX="auto">
           <Table variant="simple" colorScheme="teal" mb={8}>
             <Thead>
@@ -160,20 +236,45 @@ function Dashboard() {
                     {table.players.length > 0 ? table.players.join(', ') : 'Free'}
                   </Td>
                   <Td>
-                    <Button 
-                      colorScheme="teal" 
-                      size="sm"
-                      onClick={() => assignPlayerToTable(table.id)}
-                      isDisabled={table.status === 'occupied' || queue.length === 0}
-                    >
-                      Assign Player
-                    </Button>
+                    <HStack spacing={2}>
+                      <Select
+                        placeholder="Select player"
+                        onChange={(e) => setSelectedPlayer(e.target.value)}
+                        bg="gray.700"
+                        color="white"
+                        size="sm"
+                      >
+                        {queue.map((player) => (
+                          <option key={player._id} value={player._id}>
+                            {player.name}
+                          </option>
+                        ))}
+                      </Select>
+                      <Button 
+                        colorScheme="teal" 
+                        size="sm"
+                        onClick={() => assignPlayerToTable(table.id, selectedPlayer)}
+                        isDisabled={table.status === 'occupied' || queue.length === 0}
+                      >
+                        Assign
+                      </Button>
+                      <Button
+                        colorScheme="red"
+                        size="sm"
+                        onClick={() => removeTable(table.id)}
+                      >
+                        Remove
+                      </Button>
+                    </HStack>
                   </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
+        <Button colorScheme="green" mb={8} onClick={addTable}>
+          Add New Table
+        </Button>
         <Box bg="gray.800" p={6} borderRadius="md" boxShadow="lg" mb={8}>
           <Heading as="h3" size="lg" mb={4} color="teal.300">Queue Statistics</Heading>
           <HStack spacing={8} justify="center">
@@ -200,6 +301,20 @@ function Dashboard() {
                   </Text>
                   <Text fontSize="sm" color="gray.400">{player.phone}</Text>
                 </VStack>
+                <Select
+                  placeholder="Assign to table"
+                  onChange={(e) => assignPlayerToTable(e.target.value, player._id)}
+                  bg="gray.700"
+                  color="white"
+                  size="sm"
+                  width="auto"
+                >
+                  {tables.filter(t => t.status === 'available').map((table) => (
+                    <option key={table.id} value={table.id}>
+                      Table {table.id}
+                    </option>
+                  ))}
+                </Select>
               </HStack>
             </Box>
           ))}

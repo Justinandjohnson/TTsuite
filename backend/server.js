@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 const app = express();
@@ -21,6 +21,7 @@ const client = new MongoClient(uri, {
 
 let db;
 let Queue;
+let Tables;
 
 async function connectToDatabase() {
   try {
@@ -28,6 +29,7 @@ async function connectToDatabase() {
     console.log("Connected to MongoDB");
     db = client.db("your_database_name"); // Replace with your actual database name
     Queue = db.collection("queue");
+    Tables = db.collection("tables");
   } catch (error) {
     console.error("Failed to connect to MongoDB", error);
     process.exit(1);
@@ -76,18 +78,38 @@ app.post('/api/queue', async (req, res) => {
 app.delete('/api/queue/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const database = db;
-    const queue = database.collection("queue");
-    const deletedItem = await queue.findOneAndDelete({ _id: new MongoClient.ObjectId(id) });
+    const deletedItem = await Queue.findOneAndDelete({ _id: new ObjectId(id) });
     if (!deletedItem.value) {
       return res.status(404).json({ message: 'Queue item not found' });
     }
-    await queue.updateMany(
+    await Queue.updateMany(
       { position: { $gt: deletedItem.value.position } },
       { $inc: { position: -1 } }
     );
-    const updatedQueue = await queue.find().sort({ position: 1 }).toArray();
+    const updatedQueue = await Queue.find().sort({ position: 1 }).toArray();
     res.json({ message: 'Queue item removed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Table routes
+app.get('/api/tables', async (req, res) => {
+  try {
+    const tables = await Tables.find().sort({ id: 1 }).toArray();
+    res.json(tables);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/tables', async (req, res) => {
+  try {
+    const lastTable = await Tables.find().sort({ id: -1 }).limit(1).toArray();
+    const newId = lastTable.length > 0 ? lastTable[0].id + 1 : 1;
+    const newTable = { id: newId, status: 'available', players: [] };
+    await Tables.insertOne(newTable);
+    res.status(201).json(newTable);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -97,9 +119,7 @@ app.put('/api/tables/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { status, players } = req.body;
-    const database = db;
-    const tables = database.collection("tables");
-    const result = await tables.updateOne(
+    const result = await Tables.updateOne(
       { id: parseInt(id) },
       { $set: { status, players } }
     );
@@ -107,6 +127,19 @@ app.put('/api/tables/:id', async (req, res) => {
       return res.status(404).json({ message: 'Table not found' });
     }
     res.json({ message: 'Table updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.delete('/api/tables/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await Tables.deleteOne({ id: parseInt(id) });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Table not found' });
+    }
+    res.json({ message: 'Table removed successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
