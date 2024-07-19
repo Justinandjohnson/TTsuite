@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import QrReader from 'react-qr-reader';
 import axios from 'axios';
+import { Box, Heading, Text, VStack, useToast } from '@chakra-ui/react';
 
 function QRCodeScanner() {
   const [result, setResult] = useState('');
+  const toast = useToast();
 
   const handleScan = async (data) => {
     if (data) {
@@ -11,29 +13,55 @@ function QRCodeScanner() {
       try {
         const playerInfo = JSON.parse(data);
         await axios.post('http://localhost:5000/api/queue', playerInfo);
-        alert('Successfully added to queue!');
+        toast({
+          title: "Successfully added to queue!",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+        });
       } catch (error) {
         console.error('Error adding to queue:', error);
-        alert('Failed to add to queue. Please try again.');
+        toast({
+          title: "Failed to add to queue",
+          description: "Please try again",
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+        });
       }
     }
   };
 
   const handleError = (err) => {
     console.error(err);
+    toast({
+      title: "QR Scanner Error",
+      description: "There was an error with the QR scanner",
+      status: "error",
+      duration: 2000,
+      isClosable: true,
+    });
   };
 
   return (
-    <div>
-      <h2>Scan QR Code to Join Queue</h2>
-      <QrReader
-        delay={300}
-        onError={handleError}
-        onScan={handleScan}
-        style={{ width: '100%' }}
-      />
-      <p>{result}</p>
-    </div>
+    <Box w="100%">
+      <VStack spacing={6} align="stretch">
+        <Heading as="h2" size="xl">Scan QR Code to Join Queue</Heading>
+        <Box maxW="400px" mx="auto">
+          <QrReader
+            delay={300}
+            onError={handleError}
+            onScan={handleScan}
+            style={{ width: '100%' }}
+          />
+        </Box>
+        {result && (
+          <Text fontSize="lg" textAlign="center">
+            Last scanned: {result}
+          </Text>
+        )}
+      </VStack>
+    </Box>
   );
 }
 
