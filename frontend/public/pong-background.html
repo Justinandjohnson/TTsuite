@@ -36,11 +36,11 @@
         let ballY = canvas.height / 2;
         let ballSpeedX = 5;
         let ballSpeedY = 5;
-        let ballAccelerationPhase = 0; // 0: speeding up, 1: slowing down
+        const baseSpeed = 5;
         const maxSpeed = 15;
-        const minSpeed = 3;
         const accelerationRate = 0.1;
-        const decelerationRate = 0.3;
+        let speedResetCounter = 0;
+        const speedResetThreshold = 100; // Reset speed after this many frames
 
         function drawRect(x, y, width, height, color) {
             ctx.fillStyle = color;
@@ -123,32 +123,30 @@
             ) {
                 ballSpeedX = -ballSpeedX;
                 
-                // Change acceleration phase
-                if (Math.random() < 0.3) { // 30% chance to switch phase on paddle hit
-                    ballAccelerationPhase = 1 - ballAccelerationPhase;
-                }
-            }
-
-            // Adjust ball speed based on acceleration phase
-            if (ballAccelerationPhase === 0) {
-                // Speeding up
+                // Increase speed on paddle hit
                 ballSpeedX *= 1 + accelerationRate;
                 ballSpeedY *= 1 + accelerationRate;
-                if (Math.abs(ballSpeedX) > maxSpeed || Math.abs(ballSpeedY) > maxSpeed) {
-                    ballAccelerationPhase = 1;
-                }
-            } else {
-                // Slowing down
-                ballSpeedX *= 1 - decelerationRate;
-                ballSpeedY *= 1 - decelerationRate;
-                if (Math.abs(ballSpeedX) < minSpeed || Math.abs(ballSpeedY) < minSpeed) {
-                    ballAccelerationPhase = 0;
-                }
             }
+
+            // Gradually increase speed
+            ballSpeedX *= 1 + (accelerationRate * 0.1);
+            ballSpeedY *= 1 + (accelerationRate * 0.1);
 
             // Ensure ball speed doesn't exceed limits
             ballSpeedX = Math.max(Math.min(ballSpeedX, maxSpeed), -maxSpeed);
             ballSpeedY = Math.max(Math.min(ballSpeedY, maxSpeed), -maxSpeed);
+
+            // Reset speed periodically
+            speedResetCounter++;
+            if (speedResetCounter >= speedResetThreshold) {
+                const currentDirection = {
+                    x: Math.sign(ballSpeedX),
+                    y: Math.sign(ballSpeedY)
+                };
+                ballSpeedX = baseSpeed * currentDirection.x;
+                ballSpeedY = baseSpeed * currentDirection.y;
+                speedResetCounter = 0;
+            }
 
             // Keep ball within horizontal bounds
             if (ballX < ballSize) {
