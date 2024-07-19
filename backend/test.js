@@ -24,9 +24,22 @@ async function runTests() {
 
     // Verify the queue was updated
     const updatedQueueResponse = await axios.get(`${API_URL}/queue`);
-    const queueUpdated = updatedQueueResponse.data.some(player => player.name === newPlayer.name && player.phone === newPlayer.phone);
-    console.log('Queue updated:', queueUpdated ? 'PASS' : 'FAIL');
+    const addedPlayer = updatedQueueResponse.data.find(player => player.name === newPlayer.name && player.phone === newPlayer.phone);
+    console.log('Queue updated:', addedPlayer ? 'PASS' : 'FAIL');
     console.log('Updated Queue:', updatedQueueResponse.data);
+
+    // Test DELETE /api/queue/:id
+    if (addedPlayer) {
+      const deleteResponse = await axios.delete(`${API_URL}/queue/${addedPlayer._id}`);
+      console.log('DELETE /api/queue/:id:', deleteResponse.status === 200 ? 'PASS' : 'FAIL');
+      console.log('Delete response:', deleteResponse.data);
+
+      // Verify the queue was updated after deletion
+      const finalQueueResponse = await axios.get(`${API_URL}/queue`);
+      const playerRemoved = !finalQueueResponse.data.some(player => player._id === addedPlayer._id);
+      console.log('Player removed from queue:', playerRemoved ? 'PASS' : 'FAIL');
+      console.log('Final Queue:', finalQueueResponse.data);
+    }
 
   } catch (error) {
     console.error('Test failed:', error.message);

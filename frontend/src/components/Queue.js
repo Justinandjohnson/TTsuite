@@ -13,12 +13,24 @@ function Queue() {
     // Set up real-time updates here
   }, []);
 
+  const removeFromQueue = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/queue/${id}`);
+      setQueue(queue.filter(player => player._id !== id));
+    } catch (error) {
+      console.error('Error removing player from queue:', error);
+    }
+  };
+
   return (
     <div>
       <h2>Queue</h2>
       <ul>
-        {queue.map((player, index) => (
-          <li key={index}>{player.name} - {player.phone}</li>
+        {queue.map((player) => (
+          <li key={player._id}>
+            {player.name} - {player.phone}
+            <button onClick={() => removeFromQueue(player._id)}>Remove</button>
+          </li>
         ))}
       </ul>
     </div>
