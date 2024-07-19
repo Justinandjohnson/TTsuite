@@ -109,11 +109,21 @@ app.post('/api/queue', async (req, res) => {
     const { name, phone } = req.body;
     const lastInQueue = await Queue.findOne().sort('-position');
     const position = lastInQueue ? lastInQueue.position + 1 : 1;
-    const newQueueItem = new Queue({ name, phone, position });
+    
+    // Calculate estimated wait time (assuming 15 minutes per game)
+    const estimatedWaitTime = (position - 1) * 15;
+    
+    const newQueueItem = new Queue({ name, phone, position, estimatedWaitTime });
     await newQueueItem.save();
+    
+    // Update estimated wait times for all queue items
+    await Queue.updateMany({}, [
+      { $set: { estimatedWaitTime: { $multiply: [{ $subtract: ["$position", 1] }, 15] } } }
+    ]);
+    
     const updatedQueue = await Queue.find().sort('position');
     io.emit('queueUpdate', updatedQueue);
-    res.status(201).json({ message: 'Player added to queue', position: position });
+    res.status(201).json({ message: 'Player added to queue', position: position, estimatedWaitTime });
   } catch (error) {
     console.error('Error adding player to queue:', error);
     console.error('Error stack:', error.stack);

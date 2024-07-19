@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Heading, VStack, HStack, Text, Button, Container, useToast } from '@chakra-ui/react';
+import { Box, Heading, VStack, HStack, Text, Button, Container, useToast, Badge } from '@chakra-ui/react';
 
 function TableManagement() {
   const [tables, setTables] = useState([]);
@@ -55,7 +55,20 @@ function TableManagement() {
           <Box key={table.id} bg="gray.700" p={6} borderRadius="lg" boxShadow="lg">
             <VStack align="start" spacing={3}>
               <Heading as="h3" size="lg" color="teal.300">Table {table.id}</Heading>
-              <Text fontSize="xl" color="white">Status: {table.status}</Text>
+              <HStack>
+                <Text fontSize="xl" color="white">Status:</Text>
+                <Badge colorScheme={table.status === 'available' ? 'green' : 'red'} fontSize="md">
+                  {table.status}
+                </Badge>
+              </HStack>
+              {table.players && table.players.length > 0 && (
+                <VStack align="start" spacing={1}>
+                  <Text fontSize="md" color="white">Current Players:</Text>
+                  {table.players.map((player, index) => (
+                    <Text key={index} fontSize="sm" color="gray.300">{player}</Text>
+                  ))}
+                </VStack>
+              )}
               <HStack spacing={4}>
                 <Button 
                   colorScheme="green" 

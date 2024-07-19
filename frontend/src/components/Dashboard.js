@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { Grid, Heading, Container, Box, Text, VStack, HStack, Badge, Button, Input, useToast } from '@chakra-ui/react';
+import { Grid, Heading, Container, Box, Text, VStack, HStack, Badge, Button, Input, useToast, Stat, StatLabel, StatNumber, StatHelpText } from '@chakra-ui/react';
 
 function Dashboard() {
   const [tables, setTables] = useState([]);
@@ -100,17 +100,32 @@ function Dashboard() {
               <Badge colorScheme={getStatusColor(table.status)} mb={2} fontSize="md">
                 {table.status}
               </Badge>
-              {table.players.length > 0 && (
+              {table.players.length > 0 ? (
                 <VStack align="start" mt={2}>
                   <Text fontWeight="bold" color="white">Players:</Text>
                   {table.players.map((player, index) => (
                     <Text key={index} color="gray.300">{player}</Text>
                   ))}
                 </VStack>
+              ) : (
+                <Text color="gray.400" mt={2}>No players currently</Text>
               )}
             </Box>
           ))}
         </Grid>
+        <Box bg="gray.800" p={6} borderRadius="md" boxShadow="lg" mb={8}>
+          <Heading as="h3" size="lg" mb={4} color="teal.300">Queue Statistics</Heading>
+          <HStack spacing={8} justify="center">
+            <Stat>
+              <StatLabel color="gray.400">Total in Queue</StatLabel>
+              <StatNumber color="white">{queue.length}</StatNumber>
+            </Stat>
+            <Stat>
+              <StatLabel color="gray.400">Estimated Wait for Next</StatLabel>
+              <StatNumber color="white">{queue.length > 0 ? `${queue[0].estimatedWaitTime} min` : 'N/A'}</StatNumber>
+            </Stat>
+          </HStack>
+        </Box>
         <Heading as="h2" size="xl" textAlign="center" mt={8} mb={4} color="teal.300">
           Queue
         </Heading>

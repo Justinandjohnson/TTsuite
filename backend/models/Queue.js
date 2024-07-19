@@ -15,7 +15,7 @@ const QueueSchema = new mongoose.Schema({
   },
   estimatedWaitTime: {
     type: Number,
-    default: 0
+    required: true
   }
 }, { timestamps: true });
 
