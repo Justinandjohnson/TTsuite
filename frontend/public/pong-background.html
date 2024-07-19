@@ -71,14 +71,17 @@
             leftPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, leftPaddleY));
             rightPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, rightPaddleY));
 
-        function updateBall() {
+        function update() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Move ball
             ballX += ballSpeedX;
             ballY += ballSpeedY;
 
-            // Bounce off top and bottom
+            // Ball collision with top and bottom walls
             if (ballY - ballSize < 0 || ballY + ballSize > canvas.height) {
                 ballSpeedY = -ballSpeedY;
-                ballSpeedY = getRandomSpeed(2, 4) * Math.sign(ballSpeedY);
             }
 
             // Ball collision with paddles
@@ -92,29 +95,46 @@
                 ballSpeedY *= 0.9 + Math.random() * 0.2;
             }
 
-            // Reset ball if it goes past paddles
-            if (ballX < 0 || ballX > canvas.width) {
-                ballX = canvas.width / 2;
-                ballY = canvas.height / 2;
-                ballSpeedX = 5 * (Math.random() > 0.5 ? 1 : -1);
-                ballSpeedY = 5 * (Math.random() > 0.5 ? 1 : -1);
+            // Keep ball within horizontal bounds
+            if (ballX < ballSize) {
+                ballX = ballSize;
+                ballSpeedX = Math.abs(ballSpeedX);
+            } else if (ballX > canvas.width - ballSize) {
+                ballX = canvas.width - ballSize;
+                ballSpeedX = -Math.abs(ballSpeedX);
             }
-        }
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Move paddles to always hit the ball
+            const paddleSpeed = Math.abs(ballSpeedY) * 0.95; // Slightly slower than the ball
+            if (ballX < canvas.width / 2) {
+                // Left paddle
+                if (ballY < leftPaddleY + paddleHeight / 2) {
+                    leftPaddleY -= paddleSpeed;
+                } else {
+                    leftPaddleY += paddleSpeed;
+                }
+            } else {
+                // Right paddle
+                if (ballY < rightPaddleY + paddleHeight / 2) {
+                    rightPaddleY -= paddleSpeed;
+                } else {
+                    rightPaddleY += paddleSpeed;
+                }
+            }
 
+            // Keep paddles on screen
+            leftPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, leftPaddleY));
+            rightPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, rightPaddleY));
+
+            // Draw paddles and ball
             drawRect(0, leftPaddleY, paddleWidth, paddleHeight, 'white');
             drawRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight, 'white');
             drawCircle(ballX, ballY, ballSize, 'white');
 
-            movePaddles();
-            updateBall();
-
-            requestAnimationFrame(draw);
+            requestAnimationFrame(update);
         }
 
-        draw();
+        update();
 
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
