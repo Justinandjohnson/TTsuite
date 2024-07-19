@@ -1,9 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
-const connectDB = require('./db');
 const http = require('http');
 const socketIo = require('socket.io');
+const { connectDB, Table, QueueItem } = require('./db');
 require('dotenv').config();
 
 const app = express();
@@ -28,19 +27,6 @@ io.on('connection', (socket) => {
     console.log('Client disconnected');
   });
 });
-
-// MongoDB models
-const Table = mongoose.model('Table', new mongoose.Schema({
-  id: Number,
-  players: [String],
-  status: String
-}));
-
-const QueueItem = mongoose.model('QueueItem', new mongoose.Schema({
-  name: String,
-  phone: String,
-  joinedAt: { type: Date, default: Date.now }
-}));
 
 // Function to estimate wait time
 const estimateWaitTime = (position) => {

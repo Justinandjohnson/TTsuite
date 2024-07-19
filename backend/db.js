@@ -14,4 +14,16 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+const Table = mongoose.model('Table', new mongoose.Schema({
+  id: Number,
+  players: [String],
+  status: String
+}));
+
+const QueueItem = mongoose.model('QueueItem', new mongoose.Schema({
+  name: String,
+  phone: String,
+  joinedAt: { type: Date, default: Date.now }
+}));
+
+module.exports = { connectDB, Table, QueueItem };
