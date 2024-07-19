@@ -8,16 +8,9 @@ import Queue from './components/Queue';
 import QRCodeScanner from './components/QRCodeScanner';
 import TableManagement from './components/TableManagement';
 
-function App() {
-  const [tables, setTables] = useState([]);
+import Dashboard from './components/Dashboard';
 
-  useEffect(() => {
-    const fetchTables = async () => {
-      const res = await axios.get('http://localhost:5000/api/tables');
-      setTables(res.data);
-    };
-    fetchTables();
-  }, []);
+function App() {
 
   return (
     <ChakraProvider>
