@@ -54,18 +54,22 @@
         }
 
         function movePaddles() {
-            const paddleSpeed = 2;
-            const randomFactor = 0.2;
-            if (ballY > leftPaddleY + paddleHeight / 2) {
-                leftPaddleY += paddleSpeed + Math.random() * randomFactor;
+            const paddleSpeed = 3;
+            
+            // Left paddle
+            const leftTargetY = ballY - paddleHeight / 2;
+            if (Math.abs(leftTargetY - leftPaddleY) > paddleSpeed) {
+                leftPaddleY += (leftTargetY > leftPaddleY) ? paddleSpeed : -paddleSpeed;
             } else {
-                leftPaddleY -= paddleSpeed + Math.random() * randomFactor;
+                leftPaddleY = leftTargetY;
             }
 
-            if (ballY > rightPaddleY + paddleHeight / 2) {
-                rightPaddleY += paddleSpeed + Math.random() * randomFactor;
+            // Right paddle
+            const rightTargetY = ballY - paddleHeight / 2;
+            if (Math.abs(rightTargetY - rightPaddleY) > paddleSpeed) {
+                rightPaddleY += (rightTargetY > rightPaddleY) ? paddleSpeed : -paddleSpeed;
             } else {
-                rightPaddleY -= paddleSpeed + Math.random() * randomFactor;
+                rightPaddleY = rightTargetY;
             }
 
             // Keep paddles within canvas bounds
@@ -77,11 +81,13 @@
             ballX += ballSpeedX;
             ballY += ballSpeedY;
 
+            // Bounce off top and bottom
             if (ballY - ballSize < 0 || ballY + ballSize > canvas.height) {
                 ballSpeedY = -ballSpeedY;
                 ballSpeedY = getRandomSpeed(2, 4) * Math.sign(ballSpeedY);
             }
 
+            // Bounce off paddles
             if (
                 (ballX - ballSize < paddleWidth && ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) ||
                 (ballX + ballSize > canvas.width - paddleWidth && ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight)
@@ -91,11 +97,13 @@
                 ballSpeedY = getRandomSpeed(-4, 4);
             }
 
-            if (ballX < 0 || ballX > canvas.width) {
-                ballX = canvas.width / 2;
-                ballY = canvas.height / 2;
-                ballSpeedX = getRandomSpeed(2, 4) * (Math.random() > 0.5 ? 1 : -1);
-                ballSpeedY = getRandomSpeed(-4, 4);
+            // Keep ball within horizontal bounds
+            if (ballX < ballSize) {
+                ballX = ballSize;
+                ballSpeedX = Math.abs(ballSpeedX);
+            } else if (ballX > canvas.width - ballSize) {
+                ballX = canvas.width - ballSize;
+                ballSpeedX = -Math.abs(ballSpeedX);
             }
         }
 
