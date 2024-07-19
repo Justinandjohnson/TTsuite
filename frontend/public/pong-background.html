@@ -36,6 +36,11 @@
         let ballY = canvas.height / 2;
         let ballSpeedX = 5;
         let ballSpeedY = 5;
+        let ballAccelerationPhase = 0; // 0: speeding up, 1: slowing down
+        const maxSpeed = 15;
+        const minSpeed = 3;
+        const accelerationRate = 0.1;
+        const decelerationRate = 0.3;
 
         function drawRect(x, y, width, height, color) {
             ctx.fillStyle = color;
@@ -117,11 +122,33 @@
                 (ballX + ballSize > canvas.width - paddleWidth && ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight)
             ) {
                 ballSpeedX = -ballSpeedX;
-                // Randomize ball speed more significantly
-                const speedChange = 0.7 + Math.random() * 0.6; // Speed can change by 70% to 130%
-                ballSpeedX *= speedChange;
-                ballSpeedY *= speedChange;
+                
+                // Change acceleration phase
+                if (Math.random() < 0.3) { // 30% chance to switch phase on paddle hit
+                    ballAccelerationPhase = 1 - ballAccelerationPhase;
+                }
             }
+
+            // Adjust ball speed based on acceleration phase
+            if (ballAccelerationPhase === 0) {
+                // Speeding up
+                ballSpeedX *= 1 + accelerationRate;
+                ballSpeedY *= 1 + accelerationRate;
+                if (Math.abs(ballSpeedX) > maxSpeed || Math.abs(ballSpeedY) > maxSpeed) {
+                    ballAccelerationPhase = 1;
+                }
+            } else {
+                // Slowing down
+                ballSpeedX *= 1 - decelerationRate;
+                ballSpeedY *= 1 - decelerationRate;
+                if (Math.abs(ballSpeedX) < minSpeed || Math.abs(ballSpeedY) < minSpeed) {
+                    ballAccelerationPhase = 0;
+                }
+            }
+
+            // Ensure ball speed doesn't exceed limits
+            ballSpeedX = Math.max(Math.min(ballSpeedX, maxSpeed), -maxSpeed);
+            ballSpeedY = Math.max(Math.min(ballSpeedY, maxSpeed), -maxSpeed);
 
             // Keep ball within horizontal bounds
             if (ballX < ballSize) {
