@@ -11,8 +11,12 @@ function Queue() {
 
   useEffect(() => {
     const fetchQueue = async () => {
-      const res = await axios.get('http://localhost:5000/api/queue');
-      setQueue(res.data);
+      try {
+        const res = await axios.get('http://localhost:5000/api/queue');
+        setQueue(res.data);
+      } catch (error) {
+        console.error('Error fetching queue:', error);
+      }
     };
     fetchQueue();
 
@@ -20,9 +24,7 @@ function Queue() {
       setQueue(updatedQueue);
     });
 
-    return () => {
-      socket.off('queueUpdate');
-    };
+    return () => socket.disconnect();
   }, []);
 
   const removeFromQueue = async (id) => {

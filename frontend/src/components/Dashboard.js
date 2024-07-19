@@ -18,15 +18,12 @@ function Dashboard() {
     };
     fetchTables();
 
-    // Set up socket connection for real-time updates
     const socket = io('http://localhost:5000');
     socket.on('tableUpdate', (updatedTables) => {
       setTables(updatedTables);
     });
 
-    return () => {
-      socket.disconnect();
-    };
+    return () => socket.disconnect();
   }, []);
 
   return (
