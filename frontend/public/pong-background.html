@@ -34,8 +34,12 @@
         const ballSize = 10;
         let ballX = canvas.width / 2;
         let ballY = canvas.height / 2;
-        let ballSpeedX = 5;
-        let ballSpeedY = 5;
+        let ballSpeedX = 3;
+        let ballSpeedY = 3;
+
+        function getRandomSpeed(min, max) {
+            return Math.random() * (max - min) + min;
+        }
 
         function drawRect(x, y, width, height, color) {
             ctx.fillStyle = color;
@@ -50,18 +54,23 @@
         }
 
         function movePaddles() {
-            const paddleSpeed = 4;
+            const paddleSpeed = 2;
+            const randomFactor = 0.2;
             if (ballY > leftPaddleY + paddleHeight / 2) {
-                leftPaddleY += paddleSpeed;
+                leftPaddleY += paddleSpeed + Math.random() * randomFactor;
             } else {
-                leftPaddleY -= paddleSpeed;
+                leftPaddleY -= paddleSpeed + Math.random() * randomFactor;
             }
 
             if (ballY > rightPaddleY + paddleHeight / 2) {
-                rightPaddleY += paddleSpeed;
+                rightPaddleY += paddleSpeed + Math.random() * randomFactor;
             } else {
-                rightPaddleY -= paddleSpeed;
+                rightPaddleY -= paddleSpeed + Math.random() * randomFactor;
             }
+
+            // Keep paddles within canvas bounds
+            leftPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, leftPaddleY));
+            rightPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, rightPaddleY));
         }
 
         function updateBall() {
@@ -70,6 +79,7 @@
 
             if (ballY - ballSize < 0 || ballY + ballSize > canvas.height) {
                 ballSpeedY = -ballSpeedY;
+                ballSpeedY = getRandomSpeed(2, 4) * Math.sign(ballSpeedY);
             }
 
             if (
@@ -77,11 +87,15 @@
                 (ballX + ballSize > canvas.width - paddleWidth && ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight)
             ) {
                 ballSpeedX = -ballSpeedX;
+                ballSpeedX = getRandomSpeed(2, 4) * Math.sign(ballSpeedX);
+                ballSpeedY = getRandomSpeed(-4, 4);
             }
 
             if (ballX < 0 || ballX > canvas.width) {
                 ballX = canvas.width / 2;
                 ballY = canvas.height / 2;
+                ballSpeedX = getRandomSpeed(2, 4) * (Math.random() > 0.5 ? 1 : -1);
+                ballSpeedY = getRandomSpeed(-4, 4);
             }
         }
 
