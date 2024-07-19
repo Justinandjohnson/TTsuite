@@ -49,15 +49,21 @@ function Queue() {
     <Box w="100%">
       <Heading as="h2" size="xl" mb={6}>Queue</Heading>
       <VStack spacing={4} align="stretch">
-        {queue.map((player) => (
+        {queue.map((player, index) => (
           <HStack key={player._id} bg="white" p={4} borderRadius="md" boxShadow="md" justifyContent="space-between">
             <VStack align="start" spacing={1}>
               <Text fontWeight="bold">{player.name}</Text>
               <Text fontSize="sm" color="gray.600">{player.phone}</Text>
+              <Text fontSize="sm" color="blue.600">
+                Estimated wait: {player.estimatedWaitTime} minutes
+              </Text>
             </VStack>
-            <Button colorScheme="red" size="sm" onClick={() => removeFromQueue(player._id)}>
-              Remove
-            </Button>
+            <VStack align="end" spacing={1}>
+              <Text fontSize="sm" fontWeight="bold">Position: {index + 1}</Text>
+              <Button colorScheme="red" size="sm" onClick={() => removeFromQueue(player._id)}>
+                Remove
+              </Button>
+            </VStack>
           </HStack>
         ))}
       </VStack>

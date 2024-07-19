@@ -38,8 +38,15 @@ const Table = mongoose.model('Table', new mongoose.Schema({
 
 const QueueItem = mongoose.model('QueueItem', new mongoose.Schema({
   name: String,
-  phone: String
+  phone: String,
+  joinedAt: { type: Date, default: Date.now }
 }));
+
+// Function to estimate wait time
+const estimateWaitTime = (position) => {
+  const averageGameTime = 15; // minutes
+  return position * averageGameTime;
+};
 
 // API endpoints
 app.get('/api/tables', async (req, res) => {
@@ -48,8 +55,12 @@ app.get('/api/tables', async (req, res) => {
 });
 
 app.get('/api/queue', async (req, res) => {
-  const queue = await QueueItem.find();
-  res.json(queue);
+  const queue = await QueueItem.find().sort('joinedAt');
+  const queueWithWaitTimes = queue.map((item, index) => ({
+    ...item.toObject(),
+    estimatedWaitTime: estimateWaitTime(index)
+  }));
+  res.json(queueWithWaitTimes);
 });
 
 app.post('/api/queue', async (req, res) => {
