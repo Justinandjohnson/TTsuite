@@ -1,16 +1,6 @@
-import React from 'react';
-
-function Dashboard() {
-  return (
-    <div>
-      <h2>Dashboard</h2>
-      {/* Add your dashboard content here */}
-    </div>
-  );
-}
-
-export default Dashboard;import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
 import { Box, Grid, Heading } from '@chakra-ui/react';
 import TableStatus from './TableStatus';
 
@@ -19,8 +9,12 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchTables = async () => {
-      const res = await axios.get('http://localhost:5000/api/tables');
-      setTables(res.data);
+      try {
+        const res = await axios.get('http://localhost:5000/api/tables');
+        setTables(res.data);
+      } catch (error) {
+        console.error('Error fetching tables:', error);
+      }
     };
     fetchTables();
 
