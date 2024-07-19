@@ -20,10 +20,10 @@ function App() {
           <VStack spacing={8} p={8}>
             <Heading as="h1" size="2xl">Table Tennis Queue Management</Heading>
             <Switch>
-              <Route exact path="/" render={() => <Dashboard tables={tables} />} />
+              <Route exact path="/" component={Dashboard} />
               <Route path="/queue" component={Queue} />
               <Route path="/scan" component={QRCodeScanner} />
-              <Route path="/manage" render={() => <TableManagement tables={tables} setTables={setTables} />} />
+              <Route path="/manage" component={TableManagement} />
             </Switch>
           </VStack>
         </Box>
