@@ -50,6 +50,13 @@ async function runTests() {
     const updateTableResponse = await axios.put(`${API_URL}/tables/1`, { status: 'occupied', players: ['Player 1', 'Player 2'] });
     console.log('PUT /api/tables/:id:', updateTableResponse.status === 200 && updateTableResponse.data.status === 'occupied' ? 'PASS' : 'FAIL');
 
+    // Test error handling
+    try {
+      await axios.get(`${API_URL}/nonexistent-endpoint`);
+    } catch (error) {
+      console.log('Error handling for non-existent endpoint:', error.response.status === 404 ? 'PASS' : 'FAIL');
+    }
+
   } catch (error) {
     console.error('Test failed:', error.message);
   } finally {
