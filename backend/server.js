@@ -25,6 +25,16 @@ app.post('/api/queue', (req, res) => {
   res.status(201).json({ message: 'Added to queue' });
 });
 
+app.delete('/api/queue/:index', (req, res) => {
+  const index = parseInt(req.params.index);
+  if (index >= 0 && index < queue.length) {
+    const removedPlayer = queue.splice(index, 1)[0];
+    res.json({ message: 'Removed from queue', removedPlayer });
+  } else {
+    res.status(400).json({ message: 'Invalid queue index' });
+  }
+});
+
 // More endpoints will be added for managing tables, updating matches, etc.
 
 app.listen(port, () => {
