@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { Box, Grid, Heading, Container } from '@chakra-ui/react';
+import { Grid, Heading, Container } from '@chakra-ui/react';
 import TableStatus from './TableStatus';
 
 function Dashboard() {
