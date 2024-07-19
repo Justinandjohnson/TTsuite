@@ -84,15 +84,43 @@
                 ballSpeedY = -ballSpeedY;
             }
 
+            // Predict ball position
+            const predictedBallX = ballX + ballSpeedX * 10; // Look 10 frames ahead
+
+            // Move paddles to always hit the ball
+            const paddleSpeed = Math.abs(ballSpeedY) * 1.1; // Slightly faster than the ball
+            if (predictedBallX < canvas.width / 2) {
+                // Left paddle
+                const targetY = ballY - paddleHeight / 2;
+                if (leftPaddleY < targetY) {
+                    leftPaddleY = Math.min(leftPaddleY + paddleSpeed, targetY);
+                } else if (leftPaddleY > targetY) {
+                    leftPaddleY = Math.max(leftPaddleY - paddleSpeed, targetY);
+                }
+            } else {
+                // Right paddle
+                const targetY = ballY - paddleHeight / 2;
+                if (rightPaddleY < targetY) {
+                    rightPaddleY = Math.min(rightPaddleY + paddleSpeed, targetY);
+                } else if (rightPaddleY > targetY) {
+                    rightPaddleY = Math.max(rightPaddleY - paddleSpeed, targetY);
+                }
+            }
+
+            // Keep paddles on screen
+            leftPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, leftPaddleY));
+            rightPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, rightPaddleY));
+
             // Ball collision with paddles
             if (
                 (ballX - ballSize < paddleWidth && ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) ||
                 (ballX + ballSize > canvas.width - paddleWidth && ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight)
             ) {
                 ballSpeedX = -ballSpeedX;
-                // Randomize ball speed slightly
-                ballSpeedX *= 0.9 + Math.random() * 0.2;
-                ballSpeedY *= 0.9 + Math.random() * 0.2;
+                // Randomize ball speed more significantly
+                const speedChange = 0.7 + Math.random() * 0.6; // Speed can change by 70% to 130%
+                ballSpeedX *= speedChange;
+                ballSpeedY *= speedChange;
             }
 
             // Keep ball within horizontal bounds
@@ -103,28 +131,6 @@
                 ballX = canvas.width - ballSize;
                 ballSpeedX = -Math.abs(ballSpeedX);
             }
-
-            // Move paddles to always hit the ball
-            const paddleSpeed = Math.abs(ballSpeedY) * 0.95; // Slightly slower than the ball
-            if (ballX < canvas.width / 2) {
-                // Left paddle
-                if (ballY < leftPaddleY + paddleHeight / 2) {
-                    leftPaddleY -= paddleSpeed;
-                } else {
-                    leftPaddleY += paddleSpeed;
-                }
-            } else {
-                // Right paddle
-                if (ballY < rightPaddleY + paddleHeight / 2) {
-                    rightPaddleY -= paddleSpeed;
-                } else {
-                    rightPaddleY += paddleSpeed;
-                }
-            }
-
-            // Keep paddles on screen
-            leftPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, leftPaddleY));
-            rightPaddleY = Math.max(0, Math.min(canvas.height - paddleHeight, rightPaddleY));
 
             // Draw paddles and ball
             drawRect(0, leftPaddleY, paddleWidth, paddleHeight, 'white');
