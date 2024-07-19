@@ -51,24 +51,24 @@ function Dashboard() {
 
   return (
     <Container maxW="container.xl" py={8}>
-      <Box bg="rgba(0,0,0,0.7)" p={6} borderRadius="md">
+      <Box bg="rgba(0,0,0,0.8)" p={6} borderRadius="md" boxShadow="xl">
         <Heading as="h1" size="2xl" textAlign="center" mb={8} color="teal.300">
           Table Tennis Dashboard
         </Heading>
         <Grid templateColumns={["repeat(1, 1fr)", "repeat(2, 1fr)", "repeat(3, 1fr)"]} gap={8} mb={8}>
           {tables.map((table) => (
-            <Box key={table.id} bg="gray.700" p={4} borderRadius="md" boxShadow="md">
-              <Heading as="h3" size="lg" mb={2}>
+            <Box key={table.id} bg="gray.800" p={4} borderRadius="md" boxShadow="lg" border="1px" borderColor="gray.700">
+              <Heading as="h3" size="lg" mb={2} color="white">
                 Table {table.id}
               </Heading>
-              <Badge colorScheme={getStatusColor(table.status)} mb={2}>
+              <Badge colorScheme={getStatusColor(table.status)} mb={2} fontSize="md">
                 {table.status}
               </Badge>
               {table.players.length > 0 && (
                 <VStack align="start" mt={2}>
-                  <Text fontWeight="bold">Players:</Text>
+                  <Text fontWeight="bold" color="white">Players:</Text>
                   {table.players.map((player, index) => (
-                    <Text key={index}>{player}</Text>
+                    <Text key={index} color="gray.300">{player}</Text>
                   ))}
                 </VStack>
               )}
@@ -80,18 +80,18 @@ function Dashboard() {
         </Heading>
         <VStack spacing={4} align="stretch">
           {queue.map((player, index) => (
-            <Box key={player._id} bg="gray.700" p={4} borderRadius="md" boxShadow="md">
+            <Box key={player._id} bg="gray.800" p={4} borderRadius="md" boxShadow="lg" border="1px" borderColor="gray.700">
               <HStack justifyContent="space-between">
                 <VStack align="start" spacing={1}>
-                  <Text fontWeight="bold" fontSize="lg">
+                  <Text fontWeight="bold" fontSize="lg" color="white">
                     {index + 1}. {player.name}
                   </Text>
                   <Text fontSize="sm" color="gray.400">{player.phone}</Text>
                 </VStack>
                 <Stat>
-                  <StatLabel>Estimated Wait</StatLabel>
-                  <StatNumber>{calculateWaitTime(index + 1)} min</StatNumber>
-                  <StatHelpText>Position: {index + 1}</StatHelpText>
+                  <StatLabel color="gray.400">Estimated Wait</StatLabel>
+                  <StatNumber color="teal.300">{calculateWaitTime(index + 1)} min</StatNumber>
+                  <StatHelpText color="gray.400">Position: {index + 1}</StatHelpText>
                 </Stat>
               </HStack>
             </Box>
