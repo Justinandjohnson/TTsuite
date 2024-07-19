@@ -6,8 +6,8 @@
   "scripts": {
     "start": "nodemon server.js",
     "dev": "nodemon --signal SIGTERM server.js",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "jest --runInBand --detectOpenHandles",
+    "test:watch": "jest --watch --runInBand --detectOpenHandles"
   },
   "dependencies": {
     "axios": "^0.21.1",
@@ -16,9 +16,6 @@
     "express": "^4.19.2",
     "mongodb": "^6.8.0",
     "mongoose": "^5.13.22",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.25.1",
     "socket.io": "^4.7.5"
   },
   "devDependencies": {

@@ -22,24 +22,41 @@ describe('Table Tennis Queue System Integration Test', () => {
     if (mongoClient) await mongoClient.close();
   });
 
-  it('should add players to queue, assign them to tables, and update in real-time', async () => {
+  beforeEach(async () => {
     const db = mongoClient.db();
-    const queueCollection = db.collection('queue');
-    const tablesCollection = db.collection('tables');
+    await db.collection('queue').deleteMany({});
+    await db.collection('tables').deleteMany({});
+  });
 
-    // Clear existing data
-    await queueCollection.deleteMany({});
-    await tablesCollection.deleteMany({});
+  it('should add and remove tables', async () => {
+    // Add tables
+    const table1 = await axios.post(`${API_URL}/api/tables`);
+    const table2 = await axios.post(`${API_URL}/api/tables`);
+    
+    expect(table1.data.id).toBe(1);
+    expect(table2.data.id).toBe(2);
 
-    // Add initial tables
-    await axios.post(`${API_URL}/api/tables`);
-    await axios.post(`${API_URL}/api/tables`);
+    // Get tables
+    const tablesResponse = await axios.get(`${API_URL}/api/tables`);
+    expect(tablesResponse.data.length).toBe(2);
 
-    // Set up socket listeners
+    // Remove a table
+    await axios.delete(`${API_URL}/api/tables/${table1.data.id}`);
+    
+    const updatedTablesResponse = await axios.get(`${API_URL}/api/tables`);
+    expect(updatedTablesResponse.data.length).toBe(1);
+    expect(updatedTablesResponse.data[0].id).toBe(2);
+  });
+
+  it('should add players to queue, assign them to tables, and update in real-time', async () => {
     const queueUpdates = [];
     const tableUpdates = [];
     socket.on('queueUpdate', (data) => queueUpdates.push(data));
     socket.on('tableUpdate', (data) => tableUpdates.push(data));
+
+    // Add initial tables
+    await axios.post(`${API_URL}/api/tables`);
+    await axios.post(`${API_URL}/api/tables`);
 
     // Add players to queue
     const players = [
@@ -84,11 +101,75 @@ describe('Table Tennis Queue System Integration Test', () => {
     // Check queue is empty
     const finalQueue = await axios.get(`${API_URL}/api/queue`);
     expect(finalQueue.data.length).toBe(0);
+  });
 
-    // Reset everything
-    await queueCollection.deleteMany({});
-    await tablesCollection.deleteMany({});
+  it('should handle queue operations correctly', async () => {
+    // Add players to queue
+    const player1 = await axios.post(`${API_URL}/api/queue`, { name: 'Eve', phone: '5678901234' });
+    const player2 = await axios.post(`${API_URL}/api/queue`, { name: 'Frank', phone: '6789012345' });
 
-    console.log('Integration test completed successfully!');
-  }, 30000); // Increase timeout to 30 seconds for this test
+    // Check queue
+    const queue = await axios.get(`${API_URL}/api/queue`);
+    expect(queue.data.length).toBe(2);
+    expect(queue.data[0].name).toBe('Eve');
+    expect(queue.data[1].name).toBe('Frank');
+
+    // Remove player from queue
+    await axios.delete(`${API_URL}/api/queue/${player1.data._id}`);
+
+    // Check updated queue
+    const updatedQueue = await axios.get(`${API_URL}/api/queue`);
+    expect(updatedQueue.data.length).toBe(1);
+    expect(updatedQueue.data[0].name).toBe('Frank');
+  });
+
+  it('should update table status correctly', async () => {
+    // Add a table
+    const table = await axios.post(`${API_URL}/api/tables`);
+
+    // Update table status
+    await axios.put(`${API_URL}/api/tables/${table.data.id}`, { 
+      status: 'occupied', 
+      players: ['Grace', 'Henry']
+    });
+
+    // Check updated table
+    const updatedTable = await axios.get(`${API_URL}/api/tables/${table.data.id}`);
+    expect(updatedTable.data.status).toBe('occupied');
+    expect(updatedTable.data.players).toEqual(['Grace', 'Henry']);
+
+    // Set table back to available
+    await axios.put(`${API_URL}/api/tables/${table.data.id}`, { 
+      status: 'available', 
+      players: []
+    });
+
+    // Check table is available
+    const availableTable = await axios.get(`${API_URL}/api/tables/${table.data.id}`);
+    expect(availableTable.data.status).toBe('available');
+    expect(availableTable.data.players).toEqual([]);
+  });
+
+  it('should handle errors gracefully', async () => {
+    // Try to get a non-existent table
+    try {
+      await axios.get(`${API_URL}/api/tables/999`);
+    } catch (error) {
+      expect(error.response.status).toBe(404);
+    }
+
+    // Try to add a player with missing information
+    try {
+      await axios.post(`${API_URL}/api/queue`, { name: 'Invalid Player' });
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+    }
+
+    // Try to update a non-existent table
+    try {
+      await axios.put(`${API_URL}/api/tables/999`, { status: 'occupied' });
+    } catch (error) {
+      expect(error.response.status).toBe(404);
+    }
+  });
 });
