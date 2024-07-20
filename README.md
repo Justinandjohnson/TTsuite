@@ -1,4 +1,5 @@
 # 🏓 Table Tennis Queue Management System 🎉
+![recording (1)](https://github.com/user-attachments/assets/0956a262-338d-4b3f-85d6-bb452b4fe125)
 
 Welcome to the Table Tennis Queue Management System! 
 
@@ -74,6 +75,7 @@ This full-stack React application helps manage table tennis queues efficiently a
 4. **Manage Your Queue Position**:
    - Receive notifications as you move up in the queue.
    - Option to leave the queue if needed.
+![recording (1)](https://github.com/user-attachments/assets/5d824e8f-0732-484b-a9ac-e7ea5443b460)
 
 5. **Start Playing**:
    - When it's your turn, you'll receive a notification.
