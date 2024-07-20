@@ -64,32 +64,33 @@ describe('Table Tennis Queue System Integration Test', () => {
       { name: 'Bob', phone: '2345678901' },
       { name: 'Charlie', phone: '3456789012' },
       { name: 'David', phone: '4567890123' },
+      { name: 'Eve', phone: '5678901234' },
+      { name: 'Frank', phone: '6789012345' },
+      { name: 'Grace', phone: '7890123456' },
+      { name: 'Henry', phone: '8901234567' },
     ];
 
     for (const player of players) {
       await axios.post(`${API_URL}/api/queue`, player);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for socket update
+      await new Promise(resolve => setTimeout(resolve, 500)); // Wait for socket update
     }
 
     // Check queue updates
-    expect(queueUpdates.length).toBe(4);
-    expect(queueUpdates[3].length).toBe(4);
-    expect(queueUpdates[3][0].name).toBe('Alice');
-    expect(queueUpdates[3][3].name).toBe('David');
+    expect(queueUpdates.length).toBe(8);
+    expect(queueUpdates[7].length).toBe(8);
+    expect(queueUpdates[7][0].name).toBe('Alice');
+    expect(queueUpdates[7][7].name).toBe('Henry');
 
     // Assign players to tables
     const tables = await axios.get(`${API_URL}/api/tables`);
-    await axios.put(`${API_URL}/api/tables/${tables.data[0].id}`, { 
-      status: 'occupied', 
-      players: ['Alice', 'Bob']
-    });
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for socket update
-
-    await axios.put(`${API_URL}/api/tables/${tables.data[1].id}`, { 
-      status: 'occupied', 
-      players: ['Charlie', 'David']
-    });
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for socket update
+    for (let i = 0; i < tables.data.length; i++) {
+      const playersForTable = players.slice(i * 2, (i + 1) * 2);
+      await axios.put(`${API_URL}/api/tables/${tables.data[i].id}`, { 
+        status: 'occupied', 
+        players: playersForTable.map(p => p.name)
+      });
+      await new Promise(resolve => setTimeout(resolve, 500)); // Wait for socket update
+    }
 
     // Check table updates
     expect(tableUpdates.length).toBe(2);
@@ -98,9 +99,35 @@ describe('Table Tennis Queue System Integration Test', () => {
     expect(tableUpdates[1][1].status).toBe('occupied');
     expect(tableUpdates[1][1].players).toEqual(['Charlie', 'David']);
 
-    // Check queue is empty
+    // Check remaining players in queue
     const finalQueue = await axios.get(`${API_URL}/api/queue`);
-    expect(finalQueue.data.length).toBe(0);
+    expect(finalQueue.data.length).toBe(4);
+    expect(finalQueue.data[0].name).toBe('Eve');
+    expect(finalQueue.data[3].name).toBe('Henry');
+
+    // Add one more table
+    await axios.post(`${API_URL}/api/tables`);
+    await new Promise(resolve => setTimeout(resolve, 500)); // Wait for socket update
+
+    // Assign remaining players to the new table
+    const newTables = await axios.get(`${API_URL}/api/tables`);
+    const newTable = newTables.data.find(t => t.status === 'available');
+    await axios.put(`${API_URL}/api/tables/${newTable.id}`, { 
+      status: 'occupied', 
+      players: ['Eve', 'Frank']
+    });
+    await new Promise(resolve => setTimeout(resolve, 500)); // Wait for socket update
+
+    // Check final queue state
+    const finalQueueState = await axios.get(`${API_URL}/api/queue`);
+    expect(finalQueueState.data.length).toBe(2);
+    expect(finalQueueState.data[0].name).toBe('Grace');
+    expect(finalQueueState.data[1].name).toBe('Henry');
+
+    // Check final table state
+    const finalTableState = await axios.get(`${API_URL}/api/tables`);
+    expect(finalTableState.data.length).toBe(3);
+    expect(finalTableState.data.every(t => t.status === 'occupied')).toBe(true);
   });
 
   it('should handle queue operations correctly', async () => {
