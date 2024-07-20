@@ -1,29 +1,33 @@
-const mongoose = require('mongoose');
-require('dotenv').config();
+require('dotenv').config(); // Ensure this line is at the top to load .env variables
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
+const mongoose = require('mongoose');
+
+const connectDB = () => {
+  return new Promise((resolve, reject) => {
+    mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 10000
     });
-    console.log('MongoDB connected');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
-  }
+
+    const db = mongoose.connection;
+    db.on('error', (error) => {
+      console.error('MongoDB connection error:', error);
+      reject(error);
+    });
+    db.once('open', () => {
+      console.log('Connected to MongoDB');
+      resolve();
+    });
+  });
 };
 
-const Table = mongoose.model('Table', new mongoose.Schema({
+const TableSchema = new mongoose.Schema({
   id: Number,
   players: [String],
   status: String
-}));
+});
 
-const QueueItem = mongoose.model('QueueItem', new mongoose.Schema({
-  name: String,
-  phone: String,
-  joinedAt: { type: Date, default: Date.now }
-}));
+const Table = mongoose.model('Table', TableSchema);
 
-module.exports = { connectDB, Table, QueueItem };
+module.exports = { connectDB, Table };
