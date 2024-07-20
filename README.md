@@ -4,17 +4,6 @@ Welcome to the Table Tennis Queue Management System!
 
 This full-stack React application helps manage table tennis queues efficiently and in real-time. Let's get the ball rolling! 🚀🏓
 
-## 📋 Table of Contents
-
-- [Features](#features) 🌟
-- [Tech Stack](#tech-stack) 🛠️
-- [Setup](#setup) 🚀
-- [Usage](#usage) 📊
-- [API Endpoints](#api-endpoints) 🔗
-- [Contributing](#contributing) 🤝
-- [License](#license) 📝
-- [Learn More](#learn-more) 📚
-
 ## ✨ Features
 
 - Real-time table status updates 🔄 (never miss a free table!)
